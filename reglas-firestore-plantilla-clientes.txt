@@ -1,0 +1,15 @@
+// REGLAS DE FIRESTORE — "Gastos", plantilla para clientes nuevos (con "Crear cuenta" + código familiar)
+// Esta es una versión aparte, para cuando armes el Firebase de un cliente nuevo.
+// NO es para tu propia app (esa se queda con su archivo de reglas actual, sin tocar).
+// Firebase -> Firestore Database -> pestaña "Reglas" -> borre lo que haya -> pegue TODO esto -> Publicar.
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /hogar/{doc}     { allow read, write: if request.auth != null; }   // Costa Rica
+    match /hogar_ni/{doc}  { allow read, write: if request.auth != null; }   // Nicaragua
+    match /hogar_es/{doc}  { allow read, write: if request.auth != null; }   // España
+    match /{coleccion}/{doc} { allow read, write: if request.auth != null && coleccion.matches('^hogar.*'); } // cualquier país nuevo agregado desde la app
+    match /meta/paises     { allow read, write: if request.auth != null; }   // lista de países (Ajustes → Países)
+    match /meta/invite     { allow read: if true; allow write: if request.auth != null; }  // código familiar: se puede LEER sin haber iniciado sesión (para validarlo al crear cuenta), pero solo se puede ESCRIBIR ya logueado
+  }
+}
