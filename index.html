@@ -468,11 +468,9 @@ function lastDayOfMonth(y,m){ return new Date(y,m+1,0).getDate(); } // m 0-based
 
 /* ---------- países / monedas ---------- */
 let CUR = {
-  CR:{sym:"₡",code:"CRC",loc:"es-CR",dec:2,col:"hogar",usd:true,name:"Costa Rica",tc:520},
-  NI:{sym:"C$",code:"NIO",loc:"es-NI",dec:2,col:"hogar_ni",usd:true,name:"Nicaragua",tc:36.8},
-  ES:{sym:"€",code:"EUR",loc:"es-ES",dec:2,col:"hogar_es",usd:false,name:"España",tc:1}
+  CR:{sym:"₡",code:"CRC",loc:"es-CR",dec:2,col:"hogar",usd:true,name:"Costa Rica",tc:520}
 };
-const PAISES_BASE=["CR","NI","ES"];
+const PAISES_BASE=["CR"];
 function flagEmoji(code){
   const cc=String(code||"").toUpperCase().replace(/[^A-Z]/g,"").slice(0,2);
   if(cc.length!==2) return "🏳️";
@@ -1417,7 +1415,7 @@ function renderSet(){
       <input value="${esc(p.name)}" data-pn="${k}" placeholder="Nombre" style="flex:1.3">
       <input value="${esc(p.sym)}" data-psym="${k}" placeholder="Símbolo" style="width:44px;flex:none;text-align:center">
       <input value="${esc(p.code)}" data-pcode="${k}" placeholder="CRC" style="width:56px;flex:none;text-align:center">
-      ${!PAISES_BASE.includes(k)?`<span class="x" data-delpais="${k}">✕</span>`:""}
+      ${Object.keys(CUR).length>1?`<span class="x" data-delpais="${k}">✕</span>`:""}
     </div>
     <div class="set-row" style="margin-top:-4px">
       <div class="chk ${p.usd?'on':''}" data-pusd="${k}" style="flex:none"><span class="bx">✓</span><span style="font-size:11px">Maneja pagos en $</span></div>
@@ -1470,7 +1468,7 @@ function renderSet(){
   $("viewSet").querySelectorAll("[data-pcode]").forEach(i=>i.onchange=async()=>{ CUR[i.dataset.pcode].code=i.value.trim().toUpperCase()||"USD"; await savePaises(); renderAll(); });
   $("viewSet").querySelectorAll("[data-ptc]").forEach(i=>i.onchange=async()=>{ CUR[i.dataset.ptc].tc=Math.max(0.0001,+i.value||1); await savePaises(); });
   $("viewSet").querySelectorAll("[data-pusd]").forEach(el=>el.onclick=async()=>{ const k=el.dataset.pusd; CUR[k].usd=!CUR[k].usd; await savePaises(); renderSet(); });
-  $("viewSet").querySelectorAll("[data-delpais]").forEach(el=>el.onclick=async()=>{ const k=el.dataset.delpais; if(!confirm(`¿Quitar "${CUR[k].name}" de la lista de países? Sus datos no se borran, pero dejará de aparecer.`))return; if(k===state.pais) switchCountry(PAISES_BASE[0]); delete CUR[k]; await savePaises(); renderSet(); buildSidebar(); });
+  $("viewSet").querySelectorAll("[data-delpais]").forEach(el=>el.onclick=async()=>{ const k=el.dataset.delpais; if(Object.keys(CUR).length<=1){ alert("Tiene que quedar al menos un país."); return; } if(!confirm(`¿Quitar "${CUR[k].name}" de la lista de países? Sus datos no se borran, pero dejará de aparecer.`))return; const otro=Object.keys(CUR).find(x=>x!==k); if(k===state.pais) switchCountry(otro); delete CUR[k]; await savePaises(); renderSet(); buildSidebar(); });
   if($("addPaisToggle"))$("addPaisToggle").onclick=()=>{ $("addPaisForm").classList.toggle("hidden"); };
   if($("npUsd"))$("npUsd").onclick=()=>{ $("npUsd").classList.toggle("on"); };
   if($("npSave"))$("npSave").onclick=async()=>{
